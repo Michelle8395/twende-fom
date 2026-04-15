@@ -1,0 +1,99 @@
+:root {
+  --primary: #FF6B35;
+  --secondary: #2EC4B6;
+  --dark: #011627;
+  --light: #FDFFFC;
+  --gray: #E0E0E0;
+  --danger: #E71D36;
+  --success: #28a745;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--light);
+  color: var(--dark);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button.primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+button.secondary {
+  background-color: var(--secondary);
+  color: white;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.input-group input, .input-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--gray);
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Progress Ring Component */
+.progress-ring {
+  width: 60px;
+  height: 60px;
+}
+
+.progress-ring__circle {
+  transition: stroke-dashoffset 0.35s;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
