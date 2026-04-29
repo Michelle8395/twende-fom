@@ -10,9 +10,15 @@ const Dashboard: React.FC<{ user: any }> = ({ user }) => {
 
   useEffect(() => {
     fetch(`http://localhost:5001/api/users/${user.id}/dashboard`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Session invalid');
+        return res.json();
+      })
       .then(setData)
-      .catch(console.error);
+      .catch(err => {
+        console.error(err);
+        handleLogout();
+      });
   }, [user.id]);
 
   const handleLogout = () => {
@@ -20,7 +26,7 @@ const Dashboard: React.FC<{ user: any }> = ({ user }) => {
     window.location.href = '/';
   };
 
-  if (!data) return (
+  if (!data || !data.user) return (
     <div className="container" style={{ display: 'grid', placeItems: 'center', minHeight: '80vh' }}>
       <div className="text-center">
         <div className="spinner" style={{ border: '3px solid var(--border)', borderTop: '3px solid var(--primary)', borderRadius: '50%', width: '30px', height: '30px', animation: 'spin 1s linear infinite', margin: '0 auto 15px' }}></div>
@@ -30,7 +36,7 @@ const Dashboard: React.FC<{ user: any }> = ({ user }) => {
     </div>
   );
 
-  const totalBalance = data.clubs.reduce((acc: number, club: any) => {
+  const totalBalance = (data.clubs || []).reduce((acc: number, club: any) => {
     const member = club.members.find((m: any) => m.userId === user.id);
     return acc + (member ? member.contributed : 0);
   }, 0);
