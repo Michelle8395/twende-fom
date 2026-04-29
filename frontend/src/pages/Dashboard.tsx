@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plus, LogOut, TrendingUp, Users, Target } from 'lucide-react';
+import ProgressRing from '../components/ProgressRing';
+import StatBox from '../components/StatBox';
 
 const Dashboard: React.FC<{ user: any }> = ({ user }) => {
   const [data, setData] = useState<any>(null);
@@ -8,7 +11,8 @@ const Dashboard: React.FC<{ user: any }> = ({ user }) => {
   useEffect(() => {
     fetch(`http://localhost:5001/api/users/${user.id}/dashboard`)
       .then(res => res.json())
-      .then(setData);
+      .then(setData)
+      .catch(console.error);
   }, [user.id]);
 
   const handleLogout = () => {
@@ -16,75 +20,106 @@ const Dashboard: React.FC<{ user: any }> = ({ user }) => {
     window.location.href = '/';
   };
 
-  if (!data) return <div className="container">Loading Dashboard...</div>;
+  if (!data) return (
+    <div className="container" style={{ display: 'grid', placeItems: 'center', minHeight: '80vh' }}>
+      <div className="text-center">
+        <div className="spinner" style={{ border: '3px solid var(--border)', borderTop: '3px solid var(--primary)', borderRadius: '50%', width: '30px', height: '30px', animation: 'spin 1s linear infinite', margin: '0 auto 15px' }}></div>
+        <p>Loading your Foms...</p>
+      </div>
+      <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+
+  const totalBalance = data.clubs.reduce((acc: number, club: any) => {
+    const member = club.members.find((m: any) => m.userId === user.id);
+    return acc + (member ? member.contributed : 0);
+  }, 0);
 
   return (
     <div className="container">
-      <header className="flex-between" style={{ padding: '20px 0' }}>
-        <h2 style={{ color: 'var(--primary)' }}>Twende Fom</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => navigate('/onboarding')} className="primary" style={{ padding: '8px 15px' }}>+ New Fom</button>
-          <button onClick={handleLogout} style={{ background: 'none', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '8px 15px' }}>Logout</button>
+      <header className="flex-between" style={{ padding: '24px 0 32px' }}>
+        <div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Habari, {data.user.name.split(' ')[0]}! 👋</h2>
+          <p style={{ fontSize: '0.85rem' }}>Fom ID: <span style={{ color: 'var(--secondary)', fontWeight: '600' }}>{data.user.fomId}</span></p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button onClick={() => navigate('/onboarding')} className="primary" style={{ padding: '10px' }}>
+            <Plus size={20} />
+          </button>
+          <button onClick={handleLogout} className="secondary" style={{ padding: '10px', color: 'var(--danger)' }}>
+            <LogOut size={20} />
+          </button>
         </div>
       </header>
 
-      <section className="card" style={{ background: 'var(--dark)', color: 'white' }}>
-        <h3>Habari, {data.user.name}</h3>
-        <p style={{ opacity: 0.8, fontSize: '0.9rem' }}>Member since: {new Date(data.user.joinDate).toLocaleDateString()}</p>
-        <div style={{ marginTop: '15px' }}>
-          <span style={{ background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '5px' }}>
-            Fom ID: {data.user.fomId}
-          </span>
-        </div>
-      </section>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+        <StatBox 
+          label="Total Saved" 
+          value={`KES ${totalBalance.toLocaleString()}`} 
+          icon={<TrendingUp size={18} />}
+          color="var(--success)"
+        />
+        <StatBox 
+          label="Active Foms" 
+          value={data.clubs.length} 
+          icon={<Users size={18} />}
+          color="var(--secondary)"
+        />
+      </div>
 
-      <h3>My Active Foms</h3>
-      <div style={{ display: 'grid', gap: '15px', marginTop: '15px' }}>
+      <div className="flex-between" style={{ marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '1.1rem' }}>Active Fom Clubs</h3>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: '600', cursor: 'pointer' }}>View All</span>
+      </div>
+
+      <div style={{ display: 'grid', gap: '16px' }}>
         {data.clubs.length === 0 ? (
-          <p className="text-center" style={{ padding: '40px' }}>No active groups. Start a new one!</p>
+          <div className="glass-card text-center" style={{ padding: '48px 24px' }}>
+            <Target size={40} style={{ color: 'var(--text-dim)', marginBottom: '16px' }} />
+            <p style={{ marginBottom: '20px' }}>No active groups. Why not start a "Fom" today?</p>
+            <button onClick={() => navigate('/onboarding')} className="primary">Create New Fom</button>
+          </div>
         ) : (
-          data.clubs.map((club: any) => (
-            <div 
-              key={club.id} 
-              className="card" 
-              onClick={() => navigate(`/group/${club.id}`)}
-              style={{ cursor: 'pointer', borderLeft: '5px solid var(--secondary)' }}
-            >
-              <div className="flex-between">
-                <div>
-                  <h4>{club.name}</h4>
-                  <p style={{ fontSize: '0.8rem', color: '#666' }}>ID: {club.clubId}</p>
+          data.clubs.map((club: any) => {
+            const progress = Math.min(100, Math.round((club.currentAmount / club.targetAmount) * 100));
+            return (
+              <div 
+                key={club.id} 
+                className="glass-card flex-between" 
+                onClick={() => navigate(`/group/${club.id}`)}
+                style={{ cursor: 'pointer', padding: '20px' }}
+              >
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ fontSize: '1rem', marginBottom: '4px' }}>{club.name}</h4>
+                  <p style={{ fontSize: '0.8rem', marginBottom: '12px' }}>{club.description.substring(0, 45)}...</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Users size={14} color="var(--text-dim)" />
+                        <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>{club.members.length}</span>
+                    </div>
+                    <div style={{ height: '4px', width: '4px', borderRadius: '50%', background: 'var(--text-dim)' }} />
+                    <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--secondary)' }}>KES {club.targetAmount.toLocaleString()} Goal</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p style={{ fontWeight: 'bold' }}>{Math.round((club.currentAmount / club.targetAmount) * 100)}%</p>
-                  <p style={{ fontSize: '0.7rem' }}>Collected</p>
+                <div style={{ position: 'relative', display: 'grid', placeItems: 'center' }}>
+                    <ProgressRing radius={34} stroke={4} progress={progress} />
+                    <span style={{ position: 'absolute', fontSize: '0.75rem', fontWeight: '800' }}>{progress}%</span>
                 </div>
               </div>
-              <div style={{ background: '#eee', height: '8px', borderRadius: '4px', marginTop: '10px' }}>
-                <div 
-                  style={{ 
-                    background: 'var(--secondary)', 
-                    height: '100%', 
-                    borderRadius: '4px',
-                    width: `${Math.min(100, (club.currentAmount / club.targetAmount) * 100)}%`
-                  }} 
-                />
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
-      <section className="card" style={{ marginTop: '30px', border: '1px dashed var(--gray)' }}>
-        <h4>Personal Goals (Savings)</h4>
-        <p style={{ fontSize: '0.9rem', color: '#666' }}>Save 5000 KES in 4 weeks</p>
-        <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
-            <div style={{ width: '50px', height: '50px', border: '4px solid var(--primary)', borderRadius: '50%', display: 'grid', placeContent: 'center', fontWeight: 'bold', fontSize: '0.8rem' }}>
-                25%
-            </div>
-            <p style={{ marginLeft: '15px', fontWeight: '500' }}>For Mombasa Trip</p>
+      <div className="glass-card" style={{ marginTop: '32px', background: 'linear-gradient(135deg, var(--bg-card) 0%, #1c2641 100%)', border: '1px solid var(--primary-glow)' }}>
+        <div className="flex-between" style={{ marginBottom: '16px' }}>
+            <h4 style={{ color: 'var(--primary)' }}>Quick Tip</h4>
+            <Target size={18} color="var(--primary)" />
         </div>
-      </section>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', opacity: 0.9 }}>
+            Consistency is key! Regular contributions help the group reach milestones faster. Did you know 70% of Foms hit their goal 2 weeks early?
+        </p>
+      </div>
     </div>
   );
 };

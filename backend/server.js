@@ -10,10 +10,71 @@ app.use(express.json());
 
 // Mock Database (In-memory for prototype)
 const db = {
-  users: [],
-  clubs: [],
-  contributions: [],
-  activities: []
+  users: [
+    {
+      id: "u1",
+      fomId: "FOM-8821",
+      name: "Michelle Wanjiru",
+      email: "michelle@example.com",
+      joinDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      clubs: ["c1", "c2"]
+    },
+    {
+      id: "u2",
+      fomId: "FOM-1290",
+      name: "Alex Kamau",
+      email: "alex@example.com",
+      joinDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+      clubs: ["c1"]
+    },
+    {
+      id: "u3",
+      fomId: "FOM-4432",
+      name: "Brian Otieno",
+      email: "brian@example.com",
+      joinDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+      clubs: ["c1", "c2"]
+    }
+  ],
+  clubs: [
+    {
+      id: "c1",
+      clubId: "CLUB-5501",
+      name: "Mombasa Road Trip 🚗",
+      description: "Saving for the ultimate end-of-year road trip to the coast! Accommodation and fuel included.",
+      targetAmount: 50000,
+      currentAmount: 32500,
+      creatorId: "u1",
+      members: [
+        { userId: "u1", role: "admin", contributed: 15000 },
+        { userId: "u2", role: "member", contributed: 10000 },
+        { userId: "u3", role: "member", contributed: 7500 }
+      ],
+      nextEventDate: "2026-12-20",
+      status: "active"
+    },
+    {
+      id: "c2",
+      clubId: "CLUB-9923",
+      name: "PlayStation 5 Pro Fund 🎮",
+      description: "Pooling resources for the new PS5 Pro for the hangout spot.",
+      targetAmount: 110000,
+      currentAmount: 45000,
+      creatorId: "u3",
+      members: [
+        { userId: "u3", role: "admin", contributed: 20000 },
+        { userId: "u1", role: "member", contributed: 25000 }
+      ],
+      nextEventDate: "2026-06-15",
+      status: "active"
+    }
+  ],
+  activities: [
+    { id: uuidv4(), clubId: "c1", message: "🎉 50% Milestone reached! Coast here we come!", type: "milestone", timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: uuidv4(), clubId: "c1", message: "Alex Kamau contributed KES 5,000", type: "payment", timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: uuidv4(), clubId: "c2", message: "Michelle Wanjiru contributed KES 10,000", type: "payment", timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: uuidv4(), clubId: "c2", message: "Brian Otieno created the Fom Club: PlayStation 5 Pro Fund", type: "milestone", timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() }
+  ]
 };
 
 // --- Helper Functions ---

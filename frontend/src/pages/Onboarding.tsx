@@ -1,86 +1,157 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PlusCircle, UserPlus, ArrowRight, Wallet, Users, Layout } from 'lucide-react';
 
 const Onboarding: React.FC<{ user: any }> = ({ user }) => {
-  const [clubName, setClubName] = useState('');
-  const [target, setTarget] = useState('');
-  const [joinId, setJoinId] = useState('');
-  const [view, setView] = useState<'main' | 'create' | 'join'>('main');
+  const [mode, setMode] = useState<'choice' | 'create' | 'join'>('choice');
+  const [formData, setFormData] = useState({ name: '', description: '', targetAmount: '', clubId: '' });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleCreate = async () => {
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
     try {
       const res = await fetch('http://localhost:5001/api/clubs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: clubName, 
-          targetAmount: target, 
-          creatorId: user.id,
-          description: 'A new Fom Club'
-        }),
+        body: JSON.stringify({ ...formData, creatorId: user.id })
       });
       const club = await res.json();
       navigate(`/group/${club.id}`);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleJoin = async () => {
+  const handleJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
     try {
       const res = await fetch('http://localhost:5001/api/clubs/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clubId: joinId, userId: user.id }),
+        body: JSON.stringify({ clubId: formData.clubId, userId: user.id })
       });
-      const club = await res.json();
-      navigate(`/group/${club.id}`);
+      if (res.ok) {
+        const club = await res.json();
+        navigate(`/group/${club.id}`);
+      } else {
+        alert('Club not found');
+      }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container">
-      <div className="card text-center" style={{ marginTop: '50px' }}>
-        <h2>Karibu, {user.name}!</h2>
-        <p style={{ margin: '10px 0', fontSize: '1.2rem' }}>Your Fom ID: <strong style={{color: 'var(--primary)'}}>{user.fomId}</strong></p>
-      </div>
+    <div className="container" style={{ minHeight: '90vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <button 
+        onClick={() => mode === 'choice' ? navigate('/dashboard') : setMode('choice')} 
+        className="secondary" 
+        style={{ width: 'fit-content', marginBottom: '24px' }}
+      >
+        Cancel
+      </button>
 
-      {view === 'main' && (
-        <div style={{ display: 'grid', gap: '20px', marginTop: '20px' }}>
-          <button className="primary" onClick={() => setView('create')}>Tupange Fom Mpya (Create Club)</button>
-          <button className="secondary" onClick={() => setView('join')}>Join Existing Fom (Club ID)</button>
-          <button style={{ background: 'none', border: '1px solid var(--gray)' }} onClick={() => navigate('/dashboard')}>Go to Dashboard</button>
+      {mode === 'choice' && (
+        <div style={{ display: 'grid', gap: '20px' }}>
+          <div className="text-center" style={{ marginBottom: '20px' }}>
+            <h1 style={{ fontSize: '1.8rem', marginBottom: '8px' }}>Start Your Fom</h1>
+            <p>Choose how you want to begin pooling resources.</p>
+          </div>
+
+          <div className="glass-card flex-between" onClick={() => setMode('create')} style={{ cursor: 'pointer', padding: '32px' }}>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <div style={{ background: 'var(--primary-glow)', padding: '16px', borderRadius: '16px' }}>
+                <PlusCircle color="var(--primary)" size={32} />
+              </div>
+              <div>
+                <h3 style={{ marginBottom: '4px' }}>Create a New Fom</h3>
+                <p style={{ fontSize: '0.85rem' }}>Start a fresh goal for your circle.</p>
+              </div>
+            </div>
+            <ArrowRight size={20} color="var(--text-dim)" />
+          </div>
+
+          <div className="glass-card flex-between" onClick={() => setMode('join')} style={{ cursor: 'pointer', padding: '32px' }}>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <div style={{ background: 'var(--secondary-glow)', padding: '16px', borderRadius: '16px' }}>
+                <UserPlus color="var(--secondary)" size={32} />
+              </div>
+              <div>
+                <h3 style={{ marginBottom: '4px' }}>Join Existing Fom</h3>
+                <p style={{ fontSize: '0.85rem' }}>Enter a Club ID to join your friends.</p>
+              </div>
+            </div>
+            <ArrowRight size={20} color="var(--text-dim)" />
+          </div>
         </div>
       )}
 
-      {view === 'create' && (
-        <div className="card">
-          <h3>Create Fom Club</h3>
-          <div className="input-group">
-            <label>Club Name</label>
-            <input type="text" value={clubName} onChange={(e) => setClubName(e.target.value)} placeholder="e.g. Mombasa Roadtrip" />
-          </div>
-          <div className="input-group">
-            <label>Target Amount (KES)</label>
-            <input type="number" value={target} onChange={(e) => setTarget(e.target.value)} placeholder="e.g. 50000" />
-          </div>
-          <button className="primary" style={{ width: '100%' }} onClick={handleCreate}>Launch Fom Club</button>
-          <button style={{ width: '100%', marginTop: '10px', background: 'none' }} onClick={() => setView('main')}>Back</button>
+      {mode === 'create' && (
+        <div className="glass-card">
+          <h2 style={{ marginBottom: '24px' }}>New Fom Club</h2>
+          <form onSubmit={handleCreate}>
+            <div className="input-group">
+              <label><Layout size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Fom Name</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Zanzibar Trip 🏝️" 
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Description</label>
+              <textarea 
+                placeholder="What's the plan? Be specific!" 
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                required
+                rows={3}
+              />
+            </div>
+            <div className="input-group">
+              <label><Wallet size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Target Amount (KES)</label>
+              <input 
+                type="number" 
+                placeholder="50000" 
+                value={formData.targetAmount}
+                onChange={(e) => setFormData({...formData, targetAmount: e.target.value})}
+                required
+              />
+            </div>
+            <button type="submit" className="primary" style={{ width: '100%' }} disabled={loading}>
+              {loading ? 'Creating...' : 'Launch Fom'}
+            </button>
+          </form>
         </div>
       )}
 
-      {view === 'join' && (
-        <div className="card">
-          <h3>Join a Fom Club</h3>
-          <div className="input-group">
-            <label>Enter Club ID</label>
-            <input type="text" value={joinId} onChange={(e) => setJoinId(e.target.value)} placeholder="e.g. CLUB-1234" />
-          </div>
-          <button className="secondary" style={{ width: '100%' }} onClick={handleJoin}>Join Group</button>
-          <button style={{ width: '100%', marginTop: '10px', background: 'none' }} onClick={() => setView('main')}>Back</button>
+      {mode === 'join' && (
+        <div className="glass-card">
+          <h2 style={{ marginBottom: '24px' }}>Join a Fom</h2>
+          <form onSubmit={handleJoin}>
+            <div className="input-group">
+              <label><Users size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Club ID</label>
+              <input 
+                type="text" 
+                placeholder="e.g. CLUB-1234" 
+                value={formData.clubId}
+                onChange={(e) => setFormData({...formData, clubId: e.target.value})}
+                required
+              />
+            </div>
+            <button type="submit" className="primary" style={{ width: '100%' }} disabled={loading}>
+              {loading ? 'Joining...' : 'Find & Join'}
+            </button>
+          </form>
         </div>
       )}
     </div>
