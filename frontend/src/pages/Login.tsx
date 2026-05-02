@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { LogIn, UserCircle, Mail } from 'lucide-react';
+import { api } from '../api';
 
 const Login: React.FC<{ setUser: (user: any) => void }> = ({ setUser }) => {
   const [name, setName] = useState('');
@@ -10,17 +11,12 @@ const Login: React.FC<{ setUser: (user: any) => void }> = ({ setUser }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5001/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email })
-      });
-      const user = await res.json();
+      const user = await api.login(name, email);
       localStorage.setItem('tf_user', JSON.stringify(user));
       setUser(user);
     } catch (err) {
       console.error(err);
-      alert('Failed to connect to server. Ensure backend is running.');
+      alert('Failed to login.');
     } finally {
       setLoading(false);
     }

@@ -3,17 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, LogOut, TrendingUp, Users, Target } from 'lucide-react';
 import ProgressRing from '../components/ProgressRing';
 import StatBox from '../components/StatBox';
+import { api } from '../api';
 
 const Dashboard: React.FC<{ user: any }> = ({ user }) => {
   const [data, setData] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://localhost:5001/api/users/${user.id}/dashboard`)
-      .then(res => {
-        if (!res.ok) throw new Error('Session invalid');
-        return res.json();
-      })
+    api.getDashboard(user.id)
       .then(setData)
       .catch(err => {
         console.error(err);

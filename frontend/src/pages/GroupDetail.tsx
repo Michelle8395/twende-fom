@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Send, Users, History, Calendar } from 'lucide-react';
 import ProgressRing from '../components/ProgressRing';
 import ActivityItem from '../components/ActivityItem';
+import { api } from '../api';
 
 const GroupDetail: React.FC<{ user: any }> = ({ user }) => {
   const { id } = useParams();
@@ -12,8 +13,8 @@ const GroupDetail: React.FC<{ user: any }> = ({ user }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchDetails = useCallback(() => {
-    fetch(`http://localhost:5001/api/clubs/${id}`)
-      .then(res => res.json())
+    if (!id) return;
+    api.getClub(id)
       .then(setData)
       .catch(console.error);
   }, [id]);
@@ -24,15 +25,11 @@ const GroupDetail: React.FC<{ user: any }> = ({ user }) => {
 
   const handleContribute = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || parseFloat(amount) <= 0) return;
+    if (!id || !amount || parseFloat(amount) <= 0) return;
 
     setLoading(true);
     try {
-      await fetch(`http://localhost:5001/api/clubs/${id}/contribute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, amount: parseFloat(amount) })
-      });
+      await api.contribute(id, user.id, parseFloat(amount));
       setAmount('');
       fetchDetails();
     } catch (err) {

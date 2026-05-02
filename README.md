@@ -19,24 +19,18 @@ Twende Fom is a modern platform for friend groups ("Fom Clubs") to pool money fo
 
 ## Getting Started
 
-### 1. Run the Backend
-```bash
-cd backend
-npm install
-npm start
-```
-The backend will run on [http://localhost:5001](http://localhost:5001)
-
-### 2. Run the Frontend
+### Run the Frontend
 ```bash
 cd frontend
 npm install
 npm start
 ```
-The frontend will run on [http://localhost:3000](http://localhost:3000)
+The application will run on [http://localhost:3000](http://localhost:3000)
+
+Note: This is a standalone frontend prototype that uses browser Local Storage to persist data. No backend server is required.
 
 ## Tech Stack
 - **Frontend**: React, TypeScript, Modern CSS (Vibrant Dark Mode)
 - **Icons**: Lucide React
-- **Backend**: Node.js, Express
-- **State**: In-memory prototype with rich initial data.
+- **Data Persistence**: Local Storage (Standalone Prototype)
+

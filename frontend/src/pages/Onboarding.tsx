@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, UserPlus, ArrowRight, Wallet, Users, Layout } from 'lucide-react';
+import { api } from '../api';
 
 const Onboarding: React.FC<{ user: any }> = ({ user }) => {
   const [mode, setMode] = useState<'choice' | 'create' | 'join'>('choice');
@@ -12,12 +13,7 @@ const Onboarding: React.FC<{ user: any }> = ({ user }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5001/api/clubs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, creatorId: user.id })
-      });
-      const club = await res.json();
+      const club = await api.createClub({ ...formData, creatorId: user.id });
       navigate(`/group/${club.id}`);
     } catch (err) {
       console.error(err);
@@ -30,19 +26,11 @@ const Onboarding: React.FC<{ user: any }> = ({ user }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5001/api/clubs/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clubId: formData.clubId, userId: user.id })
-      });
-      if (res.ok) {
-        const club = await res.json();
-        navigate(`/group/${club.id}`);
-      } else {
-        alert('Club not found');
-      }
+      const club = await api.joinClub(formData.clubId, user.id);
+      navigate(`/group/${club.id}`);
     } catch (err) {
       console.error(err);
+      alert('Club not found');
     } finally {
       setLoading(false);
     }
